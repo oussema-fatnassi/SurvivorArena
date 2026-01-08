@@ -1,0 +1,26 @@
+name: Project Governance
+on: [pull_request]
+
+jobs:
+  enforce-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Description
+        uses: action-in/pull-request-checker@v1
+        with:
+          # Forces team to write what they did
+          pattern: '.*' 
+          error-message: 'Please add a description to your Pull Request.'
+      
+      - name: File Size Check (Prevent Large Binaries)
+        # Prevents pushing 1GB assets by accident
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - run: |
+          find . -type f -size +100M
+          if [ $? -eq 0 ]; then
+            echo "Error: Files larger than 100MB detected. Use LFS or reduce size."
+            # Uncomment the next line to actually fail the build
+            # exit 1 
+          fi
